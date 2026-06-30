@@ -33,6 +33,9 @@
     <div style="color: #999; font-size: 13px; margin-bottom: 20px">删除时间：{{ selectedNote.delete_time || selectedNote.update_time || '未知' }}</div>
     <div style="border-bottom: 1px solid #eee; margin-bottom: 20px"></div>
     <div style="line-height: 1.8; color: #555; white-space: pre-wrap">{{ selectedNote.content }}</div>
+    <div style="margin-top: 24px">
+      <el-button type="danger" @click="deleteForever(selectedNote.id)" :disabled="!selectedNote">彻底删除</el-button>
+    </div>
   </div>
 
   <!--内容区域：没选中项时 -->
@@ -49,6 +52,7 @@
 <script setup>
 import { ref, onMounted } from "vue"
 import request from "@/utils/request.js"
+import { ElMessage, ElMessageBox } from "element-plus"
 
 const notes = ref([])
 const selectedNote = ref(null)
@@ -68,6 +72,7 @@ const loadTrash = () => {
 const restoreNote = (noteId) => {
   request.put('/note/restoreNote', { id: noteId }).then(res => {
     if (res.code === '200') {
+      ElMessage.success('已恢复')
       if (selectedNote.value && selectedNote.value.id === noteId) {
         selectedNote.value = null
       }
@@ -77,9 +82,20 @@ const restoreNote = (noteId) => {
 }
 
 const deleteForever = (noteId) => {
-  request.delete('/note/deleteForever', { data: { id: noteId } }).then(res => {
-    if (res.code === '200') {
-      if (selectedNote.value && selectedNote.value.id === noteId) {
-        selectedNote.value = null
+  ElMessageBox.confirm('确定要彻底删除这条笔记吗？此操作不可撤销。', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    request.delete('/note/deleteForever', { data: { id: noteId } }).then(res => {
+      if (res.code === '200') {
+        ElMessage.success('已彻底删除')
+        if (selectedNote.value && selectedNote.value.id === noteId) {
+          selectedNote.value = null
+        }
+        loadTrash()
       }
-      loadTra
+    })
+  }).catch(() => {})
+}
+</script>

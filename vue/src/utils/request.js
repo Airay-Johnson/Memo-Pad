@@ -10,6 +10,18 @@ const request = axios.create({
 // 可以自请求发送前对请求做一些处理
 request.interceptors.request.use(config => {
     config.headers['Content-Type'] = 'application/json;charset=utf-8';
+
+    // 从 localStorage 读取用户信息，附加到请求中（如果需要身份标识）
+    const user = localStorage.getItem('user')
+    if (user) {
+      try {
+        const userObj = JSON.parse(user)
+        if (userObj.id) {
+          config.headers['userId'] = userObj.id
+        }
+      } catch(e) {}
+    }
+
     return config
 }, error => {
     return Promise.reject(error)
@@ -32,6 +44,10 @@ request.interceptors.response.use(
                 ElMessage.error('未找到请求接口')
             } else if (error.response.status === 500) {
                 ElMessage.error('系统异常，请查看后端控制台报错')
+            } else if (error.response.status === 401) {
+                ElMessage.error('登录已过期，请重新登录')
+                localStorage.removeItem('user')
+                window.location.href = '/login'
             } else {
                 console.error(error.message)
             }

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.AdminMapper">
+
+    <select id="selectAll" resultType="org.example.entity.Admin">
+        select * from `admin` order by id desc
+    </select>
+
+    <select id="selectByUsername" resultType="org.example.entity.Admin">
+        select * from `admin` where username = #{username}
+    </select>
+
+    <insert id="insert" parameterType="org.example.entity.Admin">
+        insert into `admin` (username, password, name, avatar) values (#{username}, #{password}, #{name}, #{avatar})
+    </insert>
+
+    <update id="updatePassword">
+        update `admin` set password = #{password} where id = #{id}
+    </update>
+
+    <update id="updateProfile">
+        update `admin` set name = #{name}, avatar = #{avatar} where id = #{id}
+    </update>
+
+</mapper>

@@ -42,14 +42,6 @@
 
       <!-- 选中了笔记 → 显示正文 -->
       <div v-if="selectedNote" style="flex: 1;padding: 0 60px; display: flex; flex-direction: column">
-        <!--
-        <div style="display: flex;gap: 10px;cursor: pointer;padding: 20px 24px 0 24px">
-          <el-icon ><Back /></el-icon>
-          <el-icon><FolderRemove /></el-icon>
-          <el-icon><List /></el-icon>
-          <el-icon><Failed /></el-icon>
-        </div>
-        <-->
         <div style="border-bottom: 1px solid #eee"></div>
         <el-input v-model="selectedNote.title" @blur="update" class="no-border-input" placeholder="标题" style="font-size: 22px; font-weight: bold" />
         <el-input v-model="selectedNote.content" @blur="update" type="textarea" :autosize="{minRows:10}" class="no-border-input" ></el-input>
@@ -71,6 +63,7 @@
 <script setup>
 import { ref, onMounted } from "vue"
 import request from "@/utils/request.js"
+import { ElMessage } from "element-plus"
 
 const notes = ref([])
 const selectedNote = ref(null)
