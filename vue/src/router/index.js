@@ -26,4 +26,8 @@ router.beforeEach((to, from, next) => {
   if (to.path !== '/login' && to.path !== '/register' && !user) {
     next('/login')
   } else {
-  
+    next()
+  }
+})
+
+export default router
