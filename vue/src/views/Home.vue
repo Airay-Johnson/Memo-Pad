@@ -23,6 +23,10 @@
       <template v-if="selectedNote">
         <div class="editor-header">
           <el-input v-model="selectedNote.title" class="no-border-input title-input" placeholder="标题" @input="update" />
+          <!-- ★ AI 助手按钮 -->
+          <el-button type="primary" size="small" @click="showAiDialog = true" :icon="MagicStick">
+            AI 助手
+          </el-button>
           <el-icon class="trash-icon" @click="moveToTrash(selectedNote.id)"><Delete /></el-icon>
         </div>
         <el-input
@@ -36,6 +40,13 @@
       </template>
       <div v-else class="empty-hint">选择或新建一个笔记</div>
     </div>
+
+    <!-- ★ AI 助手弹窗 -->
+    <AiAssistant
+      v-model="showAiDialog"
+      :content="selectedNote?.content"
+      @replace="onAiReplace"
+    />
   </div>
 </template>
 
@@ -43,10 +54,12 @@
 import { ref, onMounted } from 'vue'
 import request from '@/utils/request.js'
 import { ElMessage } from 'element-plus'
-import { Plus, Close, Delete } from '@element-plus/icons-vue'
+import { Plus, Close, Delete, MagicStick } from '@element-plus/icons-vue'
+import AiAssistant from '@/components/AiAssistant.vue'
 
 const notes = ref([])
 const selectedNote = ref(null)
+const showAiDialog = ref(false)
 
 const loadNotes = () => {
   request.get('/note/selectAll').then(res => {
@@ -87,6 +100,14 @@ const moveToTrash = (noteId) => {
   })
 }
 
+// ★ AI 替换回调：把 AI 结果写入笔记内容
+const onAiReplace = (newContent) => {
+  if (selectedNote.value) {
+    selectedNote.value.content = newContent
+    update() // 自动保存
+  }
+}
+
 const formatTime = (t) => {
   if (!t) return ''
   return new Date(t).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
@@ -114,8 +135,8 @@ onMounted(loadNotes)
 .editor-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .trash-icon { font-size: 18px; color: #aaa; cursor: pointer; }
 .trash-icon:hover { color: #f56c6c; }
-.no-border-input >>> .el-input__wrapper { box-shadow: none !important; background: transparent; }
-.title-input >>> .el-input__inner { font-size: 22px; font-weight: 600; }
-.content-input >>> .el-textarea__inner { font-size: 16px; line-height: 1.8; border: none; box-shadow: none; resize: none; }
+.no-border-input :deep(.el-input__wrapper) { box-shadow: none !important; background: transparent; }
+.title-input :deep(.el-input__inner) { font-size: 22px; font-weight: 600; }
+.content-input :deep(.el-textarea__inner) { font-size: 16px; line-height: 1.8; border: none; box-shadow: none; resize: none; }
 .empty-hint { color: #ccc; font-size: 18px; text-align: center; margin-top: 200px; }
 </style>
