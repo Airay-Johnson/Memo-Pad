@@ -1,176 +1,150 @@
 <template>
-  <div style="display: flex; height: 100%">
-
-    <!-- 没选中分组时 -->
-    <div v-if="!selectedGroup" style="flex: 1; display: flex; align-items: center; justify-content: center">
-      <div style="text-align: center">
-        <img src="@/assets/imgs/p1.png" alt="" style="width: 200px">
-        <div style="color: #bbb; margin-top: 16px">从左侧分组菜单选择一个分组查看笔记</div>
+  <div class="group-layout">
+    <div class="left-panel" style="width:300px">
+      <div class="panel-header">
+        <span>{{ selectedGroup ? selectedGroup.name : '分组' }}</span>
+        <el-button type="primary" size="small" :icon="Plus" @click="insertNewNote">新建</el-button>
+      </div>
+      <div class="note-list">
+        <div
+          v-for="note in notes"
+          :key="note.id"
+          class="note-card"
+          :class="{ active: selectedNote && selectedNote.id === note.id }"
+          @click="selectNote(note)"
+        >
+          <div class="card-title">{{ note.title || '无标题' }}</div>
+          <div class="card-meta">{{ formatTime(note.updateTime) }}</div>
+          <el-icon class="delete-icon" @click.stop="moveToTrash(note.id)"><Close /></el-icon>
+        </div>
+        <div v-if="notes.length === 0 && selectedGroup" class="empty-list">暂无笔记，点新建创建一个吧</div>
       </div>
     </div>
-
-    <!-- 选中分组后：左栏笔记列表 + 右栏正文 -->
-    <template v-else style="display: flex; flex: 1; width: 100%">
-
-      <!-- ===== 左栏：笔记标题列表 ===== -->
-      <div style="background-color: whitesmoke; width: 300px; display: flex; flex-direction: column; border-right: 1px solid #ddd">
-
-        <!-- 分组名标题 -->
-        <div style="padding: 16px 20px; border-bottom: 1px solid #ddd">
-          <span style="font-size: 16px; font-weight: bold; color: #333">{{ selectedGroup.name }}</span>
-          <span style="color: #bbb; font-size: 12px; margin-left: 6px">{{ notes.length }} 条</span>
-          <span
-              style="display: inline-flex;border:1px solid #dddddd;border-radius:50px;padding: 4px 12px ;align-items: center; margin-left: auto; cursor: pointer; font-size: 13px; color: #666"
-              @click="insertNewNote">
-          <el-icon style="font-size: 18px; margin-right: 4px"><EditPen /></el-icon>
-            新建
-        </span>
+    <div class="right-panel">
+      <template v-if="selectedNote">
+        <div class="editor-header">
+          <el-input v-model="selectedNote.title" class="no-border-input title-input" placeholder="标题" @input="update" />
         </div>
-
-        <!-- 有笔记时 -->
-        <div v-if="notes.length > 0" style="flex: 1; overflow-y: auto">
-          <div v-for="note in notes" :key="note.id"
-               style="margin: 6px 12px; padding: 12px 14px; cursor: pointer; border: 1px solid #e0e0e0; border-radius: 8px; transition: all 0.15s; display: flex; align-items: center; justify-content: space-between"
-               :style="selectedNote && selectedNote.id === note.id ? { background: '#e8e8e8', borderColor: '#c0c0c0' } : { background: '#fff' }"
-               @click="selectedNote = note">
-            <div style="flex: 1; min-width: 0">
-              <div style="font-size: 14px; color: #333; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ note.title }}</div>
-              <div style="font-size: 12px; color: #bbb">{{ note.create_time || '' }}</div>
-            </div>
-            <el-icon style="color: #ccc; cursor: pointer; flex-shrink: 0; margin-left: 8px" @click.stop="moveToTrash(note.id)"><Delete /></el-icon>
-          </div>
-        </div>
-
-        <!-- 没有笔记时 -->
-        <div v-else style="flex: 1; display: flex; align-items: center; justify-content: center">
-          <span style="color: #bbb; font-size: 14px">暂无笔记</span>
-        </div>
-
-      </div>
-
-      <!-- ===== 右栏：笔记正文 ===== -->
-      <div style="flex: 1; display: flex; flex-direction: column">
-
-        <!-- 选中了笔记 → 显示正文 -->
-        <div v-if="selectedNote" style="flex: 1;padding: 0 60px; display: flex; flex-direction: column">
-          <div style="display: flex;gap: 10px;cursor: pointer;padding: 20px 24px 0 24px">
-            <el-icon @click="moveToTrash"><Delete /></el-icon>
-          </div>
-          <div style="border-bottom: 1px solid #eee"></div>
-          <el-input v-model="selectedNote.title" @blur="update" class="no-border-input" placeholder="标题" style="font-size: 22px; font-weight: bold" />
-          <el-input v-model="selectedNote.content" @blur="update" type="textarea" :autosize="{minRows:10}" class="no-border-input" ></el-input>
-        </div>
-
-        <!-- 没选笔记 → 引导图 -->
-        <div v-else style="flex: 1; display: flex; align-items: center; justify-content: center">
-          <div style="text-align: center">
-            <img src="@/assets/imgs/p1.png" alt="" style="width: 200px">
-            <div style="color: #bbb; margin-top: 16px">点击左侧笔记查看内容</div>
-          </div>
-        </div>
-
-      </div>
-
-    </template>
-
+        <el-input
+          v-model="selectedNote.content"
+          type="textarea"
+          class="no-border-input content-input"
+          :autosize="{ minRows: 20 }"
+          placeholder="开始写点什么..."
+          @input="update"
+        />
+      </template>
+      <div v-else class="empty-hint">选择一个笔记</div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from "vue"
-import { useRoute } from "vue-router"
-import request from "@/utils/request.js"
-import { ElMessage } from "element-plus"
+import { ref, watch, onMounted, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
+import request from '@/utils/request.js'
+import { ElMessage } from 'element-plus'
+import { Plus, Close } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const notes = ref([])
-const selectedGroup = ref(null)
 const selectedNote = ref(null)
+const selectedGroup = ref(null)
 const groups = ref([])
 
-onMounted(() => {
+const loadGroups = () => {
   request.get('/noteGroup/selectAll').then(res => {
-    if (res.code === '200') {
-      groups.value = res.data
-      const gid = route.query.groupId
-      if (gid) {
-        const g = groups.value.find(item => item.id === Number(gid))
-        if (g) selectGroup(g)
-      }
-    }
+    if (res.code === '200') groups.value = res.data
   })
-})
-
-// 监听路由参数变化，切换分组时重新加载
-watch(() => route.query.groupId, (newGid) => {
-  if (newGid && groups.value.length > 0) {
-    const g = groups.value.find(item => item.id === Number(newGid))
-    if (g) selectGroup(g)
-  }
-})
+}
 
 const selectGroup = (group) => {
   selectedGroup.value = group
   selectedNote.value = null
   request.get('/note/selectByGroupId?groupId=' + group.id).then(res => {
-    if (res.code === '200') {
-      notes.value = res.data
-    }
+    if (res.code === '200') notes.value = res.data
   })
 }
+
+const selectNote = (note) => { selectedNote.value = { ...note } }
 
 const insertNewNote = () => {
-  request.post('/note/insertNewNote', { title: '新建笔记', content: '',group_id:selectedGroup.value.id }).then(res=>{
-    if(res.code==="200"){
-      request.get('/note/selectByGroupId?groupId='+selectedGroup.value.id).then(res => {
-        if (res.code === '200') {
-          notes.value = res.data
-          selectedNote.value=notes.value[0]
-        }
-      })
-    }
+  if (!selectedGroup.value) { ElMessage.warning('请先选择一个分组'); return }
+  request.post('/note/insertNewNote', { title: '新建笔记', content: '', groupId: selectedGroup.value.id }).then(res => {
+    if (res.code === '200') selectGroup(selectedGroup.value)
   })
 }
 
-const update = () =>{
-  request.put('/note/updateNote',{title:selectedNote.value.title,id:selectedNote.value.id, content:selectedNote.value.content}).then(res=>{
-    if(res.code==='200'){
-      request.get('/note/selectByGroupId?groupId='+selectedGroup.value.id).then(res=>{
-        if (res.code === '200') {
-          notes.value = res.data
-        }
-      })
-    }
-  })
+let updateTimer = null
+const update = () => {
+  if (!selectedNote.value) return
+  clearTimeout(updateTimer)
+  updateTimer = setTimeout(() => {
+    request.put('/note/updateNote', {
+      id: selectedNote.value.id,
+      title: selectedNote.value.title,
+      content: selectedNote.value.content
+    }).then(res => {
+      if (res.code === '200' && selectedGroup.value) selectGroup(selectedGroup.value)
+    })
+  }, 500)
 }
 
 const moveToTrash = (noteId) => {
   const id = noteId !== undefined ? noteId : selectedNote.value?.id
   if (!id) return
-  request.put('/note/moveToTrash', { id: id }).then(res => {
+  request.put('/note/moveToTrash', { id }).then(res => {
     if (res.code === '200') {
-      if (selectedNote.value && selectedNote.value.id === id) {
-        selectedNote.value = null
-      }
-      request.get('/note/selectByGroupId?groupId='+selectedGroup.value.id).then(res => {
-        if (res.code === '200') { notes.value = res.data }
-      })
+      if (selectedNote.value && selectedNote.value.id === id) selectedNote.value = null
+      ElMessage.success('已移至回收站')
+      if (selectedGroup.value) selectGroup(selectedGroup.value)
     }
   })
 }
 
-</script>
-
-<style>
-
-.no-border-input .el-input__wrapper,
-.no-border-input .el-textarea__inner {
-  box-shadow: none !important;
-  border: none !important;
-  background: transparent !important;
-  padding: 0 !important;
-  --el-input-border-color: transparent;
-  --el-input-placeholder-color: #c0c4cc;
+const formatTime = (t) => {
+  if (!t) return ''
+  return new Date(t).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
+// 初始加载
+loadGroups()
+
+// URL 参数变化时，自动切换分组
+const checkRoute = () => {
+  const gid = route.query.groupId
+  if (gid && groups.value.length > 0) {
+    const g = groups.value.find(item => item.id === Number(gid))
+    if (g) selectGroup(g)
+  }
+}
+
+watch(() => route.query.groupId, () => { checkRoute() })
+watch(() => groups.value.length, () => { checkRoute() })
+
+onMounted(() => { nextTick(() => { checkRoute() }) })
+</script>
+
+<style scoped>
+.group-layout { display: flex; height: 100vh; }
+.left-panel { background: #fafafa; border-right: 1px solid #eee; display: flex; flex-direction: column; }
+.panel-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 12px; border-bottom: 1px solid #eee; font-weight: 600; }
+.note-list { flex: 1; overflow-y: auto; }
+.note-card {
+  position: relative; margin: 6px 12px; padding: 12px 14px;
+  border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+}
+.note-card:hover { border-color: #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.15); }
+.note-card.active { border-color: #667eea; background: #f0f2ff; }
+.card-title { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 20px; }
+.card-meta { font-size: 12px; color: #999; margin-top: 4px; }
+.delete-icon { position: absolute; top: 12px; right: 10px; font-size: 14px; color: #ccc; cursor: pointer; }
+.delete-icon:hover { color: #f56c6c; }
+.right-panel { flex: 1; padding: 20px 30px; overflow-y: auto; }
+.editor-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.no-border-input >>> .el-input__wrapper { box-shadow: none !important; background: transparent; }
+.title-input >>> .el-input__inner { font-size: 22px; font-weight: 600; }
+.content-input >>> .el-textarea__inner { font-size: 16px; line-height: 1.8; border: none; box-shadow: none; resize: none; }
+.empty-hint { color: #ccc; font-size: 18px; text-align: center; margin-top: 200px; }
+.empty-list { color: #bbb; text-align: center; padding: 40px 20px; font-size: 14px; }
 </style>

@@ -1,27 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.example.mapper.AdminMapper">
 
-    <select id="selectAll" resultType="org.example.entity.Admin">
-        select * from `admin` order by id desc
+    <resultMap id="adminMap" type="org.example.entity.Admin">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="name" property="name"/>
+        <result column="avatar" property="avatar"/>
+    </resultMap>
+
+    <select id="selectByUsername" resultMap="adminMap">
+        select * from admin where username=#{username}
     </select>
 
-    <select id="selectByUsername" resultType="org.example.entity.Admin">
-        select * from `admin` where username = #{username}
+    <select id="selectById" resultMap="adminMap">
+        select * from admin where id=#{id}
     </select>
 
     <insert id="insert" parameterType="org.example.entity.Admin">
-        insert into `admin` (username, password, name, avatar) values (#{username}, #{password}, #{name}, #{avatar})
+        insert into admin(username, password, name) values(#{username}, #{password}, #{name})
     </insert>
 
-    <update id="updatePassword">
-        update `admin` set password = #{password} where id = #{id}
+    <update id="updatePassword" parameterType="org.example.entity.Admin">
+        update admin set password=#{password} where id=#{id}
     </update>
 
-    <update id="updateProfile">
-        update `admin` set name = #{name}, avatar = #{avatar} where id = #{id}
+    <update id="updateProfile" parameterType="org.example.entity.Admin">
+        update admin set username=#{username}, name=#{name} where id=#{id}
     </update>
 
 </mapper>

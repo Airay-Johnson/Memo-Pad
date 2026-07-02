@@ -1,101 +1,115 @@
 <template>
-<div style="display: flex; height: 100%">
-
-  <!--目录区域-->
-  <div style="background-color: whitesmoke; width: 300px; display: flex; flex-direction: column">
-    <div style="display: flex; height: 60px; border-bottom: 1px solid #ddd; align-items: center">
-      <span style="font-size: 15px; font-weight: bold; padding-left: 20px;">回收站</span>
-    </div>
-
-    <!-- 有回收项时 -->
-    <div v-if="notes.length > 0" style="flex: 1; overflow-y: auto">
-      <div v-for="note in notes" :key="note.id"
-           style="margin: 6px 12px; padding: 12px 14px; cursor: pointer; border: 1px solid #e0e0e0; border-radius: 8px; transition: all 0.15s; display: flex; align-items: center; justify-content: space-between"
-           :style="selectedNote && selectedNote.id === note.id ? { background: '#e8e8e8', borderColor: '#c0c0c0' } : { background: '#fff' }"
-           @click="selectedNote = note">
-        <div style="flex: 1; min-width: 0">
-          <div style="font-size: 14px; color: #333; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ note.title }}</div>
-          <div style="font-size: 12px; color: #bbb">{{ note.update_time || '' }}</div>
+  <div class="trash-layout">
+    <div class="left-panel" style="width:300px">
+      <div class="panel-header"><span>回收站</span></div>
+      <div class="note-list">
+        <div
+          v-for="note in notes"
+          :key="note.id"
+          class="note-card"
+          :class="{ active: selectedNote && selectedNote.id === note.id }"
+          @click="selectNote(note)"
+        >
+          <div class="card-title">{{ note.title || '无标题' }}</div>
+          <div class="card-meta">删除于 {{ formatTime(note.deleteTime) }}</div>
+          <el-icon class="restore-icon" @click.stop="restoreNote(note.id)"><RefreshLeft /></el-icon>
         </div>
-        <el-icon style="color: #4eb88c; cursor: pointer; flex-shrink: 0; margin-left: 8px" @click.stop="restoreNote(note.id)"><RefreshLeft /></el-icon>
+        <div v-if="notes.length === 0" class="empty-list">回收站空空如也</div>
       </div>
     </div>
-
-    <!-- 没回收项时 -->
-    <div v-else style="flex: 1; display: flex; align-items: center; justify-content: center">
-      <span style="font-size: 14px; color: #bbb">回收站为空</span>
+    <div class="right-panel">
+      <template v-if="selectedNote">
+        <div class="detail-header">
+          <div class="detail-meta">
+            <span>删除时间：{{ formatFull(selectedNote.deleteTime) }}</span>
+          </div>
+          <div class="detail-actions">
+            <el-button type="primary" size="small" @click="restoreNote(selectedNote.id)">恢复</el-button>
+            <el-button type="danger" size="small" @click="deleteForever(selectedNote.id)">彻底删除</el-button>
+          </div>
+        </div>
+        <h3 class="detail-title">{{ selectedNote.title }}</h3>
+        <div class="detail-content">{{ selectedNote.content }}</div>
+      </template>
+      <div v-else class="empty-hint">选择查看已删除的笔记</div>
     </div>
   </div>
-
-  <!--内容区域：有选中项时 -->
-  <div v-if="selectedNote" style="flex: 1; padding: 40px 60px; overflow-y: auto">
-    <div style="font-size: 22px; font-weight: bold; color: #333; margin-bottom: 8px">{{ selectedNote.title }}</div>
-    <div style="color: #999; font-size: 13px; margin-bottom: 20px">删除时间：{{ selectedNote.delete_time || selectedNote.update_time || '未知' }}</div>
-    <div style="border-bottom: 1px solid #eee; margin-bottom: 20px"></div>
-    <div style="line-height: 1.8; color: #555; white-space: pre-wrap">{{ selectedNote.content }}</div>
-    <div style="margin-top: 24px">
-      <el-button type="danger" @click="deleteForever(selectedNote.id)" :disabled="!selectedNote">彻底删除</el-button>
-    </div>
-  </div>
-
-  <!--内容区域：没选中项时 -->
-  <div v-else style="flex: 1; display: flex; align-items: center; justify-content: center">
-    <div style="text-align: center">
-      <img src="@/assets/imgs/p2.png" alt="" style="width: 200px">
-      <div style="color: #bbb; margin-top: 16px">点滴文字，高效生活</div>
-    </div>
-  </div>
-
-</div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
-import request from "@/utils/request.js"
-import { ElMessage, ElMessageBox } from "element-plus"
+import { ref, onMounted } from 'vue'
+import request from '@/utils/request.js'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { RefreshLeft } from '@element-plus/icons-vue'
 
 const notes = ref([])
 const selectedNote = ref(null)
 
-onMounted(() => {
-  loadTrash()
-})
-
 const loadTrash = () => {
   request.get('/note/selectTrash').then(res => {
-    if (res.code === '200') {
-      notes.value = res.data
-    }
+    if (res.code === '200') notes.value = res.data
   })
 }
+
+const selectNote = (note) => { selectedNote.value = { ...note } }
 
 const restoreNote = (noteId) => {
   request.put('/note/restoreNote', { id: noteId }).then(res => {
     if (res.code === '200') {
       ElMessage.success('已恢复')
-      if (selectedNote.value && selectedNote.value.id === noteId) {
-        selectedNote.value = null
-      }
+      if (selectedNote.value && selectedNote.value.id === noteId) selectedNote.value = null
       loadTrash()
     }
   })
 }
 
 const deleteForever = (noteId) => {
-  ElMessageBox.confirm('确定要彻底删除这条笔记吗？此操作不可撤销。', '警告', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
+  ElMessageBox.confirm('确定要永久删除吗？不可恢复！', '警告', {
+    confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning'
   }).then(() => {
-    request.delete('/note/deleteForever', { data: { id: noteId } }).then(res => {
+    request.delete('/note/deleteForever?id=' + noteId).then(res => {
       if (res.code === '200') {
-        ElMessage.success('已彻底删除')
-        if (selectedNote.value && selectedNote.value.id === noteId) {
-          selectedNote.value = null
-        }
+        ElMessage.success('已永久删除')
+        if (selectedNote.value && selectedNote.value.id === noteId) selectedNote.value = null
         loadTrash()
       }
     })
   }).catch(() => {})
 }
+
+const formatTime = (t) => {
+  if (!t) return ''
+  return new Date(t).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+}
+const formatFull = (t) => {
+  if (!t) return ''
+  return new Date(t).toLocaleString('zh-CN')
+}
+
+onMounted(loadTrash)
 </script>
+
+<style scoped>
+.trash-layout { display: flex; height: 100vh; }
+.left-panel { background: #fafafa; border-right: 1px solid #eee; display: flex; flex-direction: column; }
+.panel-header { padding: 16px 12px; border-bottom: 1px solid #eee; font-weight: 600; }
+.note-list { flex: 1; overflow-y: auto; }
+.note-card {
+  position: relative; margin: 6px 12px; padding: 12px 14px;
+  border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+}
+.note-card:hover { border-color: #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.15); }
+.note-card.active { border-color: #667eea; background: #f0f2ff; }
+.card-title { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 24px; }
+.card-meta { font-size: 12px; color: #999; margin-top: 4px; }
+.restore-icon { position: absolute; top: 12px; right: 10px; font-size: 14px; color: #67c23a; cursor: pointer; }
+.restore-icon:hover { color: #529b2e; }
+.right-panel { flex: 1; padding: 20px 30px; overflow-y: auto; }
+.detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #eee; }
+.detail-meta { font-size: 13px; color: #999; }
+.detail-actions { display: flex; gap: 8px; }
+.detail-title { font-size: 20px; margin-bottom: 16px; }
+.detail-content { font-size: 15px; line-height: 1.8; color: #555; white-space: pre-wrap; }
+.empty-hint { color: #ccc; font-size: 18px; text-align: center; margin-top: 200px; }
+.empty-list { color: #bbb; text-align: center; padding: 40px 20px; font-size: 14px; }
+</style>

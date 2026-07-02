@@ -5,35 +5,34 @@ import org.example.common.Result;
 import org.example.entity.Admin;
 import org.example.service.AdminService;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
 
     @Resource
-    AdminService adminService;
+    private AdminService adminService;
 
     @PostMapping("/login")
     public Result login(@RequestBody Admin admin) {
         Admin result = adminService.login(admin.getUsername(), admin.getPassword());
-        if (result == null) {
-            return Result.error("用户名或密码错误");
-        }
         return Result.success(result);
     }
 
     @PostMapping("/register")
     public Result register(@RequestBody Admin admin) {
-        Admin result = adminService.register(admin);
-        if (result == null) {
-            return Result.error("用户名已存在");
-        }
-        return Result.success(result);
+        adminService.register(admin);
+        return Result.success();
     }
 
     @PutMapping("/updatePassword")
-    public Result updatePassword(@RequestBody Admin admin) {
-        adminService.updatePassword(admin.getId(), null, admin.getPassword());
+    public Result updatePassword(@RequestBody Map<String, String> map) {
+        adminService.updatePassword(
+            Integer.parseInt(map.get("id")),
+            map.get("oldPassword"),
+            map.get("newPassword")
+        );
         return Result.success();
     }
 
