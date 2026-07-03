@@ -1,17 +1,36 @@
-Server:
+server:
   port: 9999
+
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: 123456
     url: jdbc:mysql://localhost:3306/memopad?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2b8&allowPublicKeyRetrieval=true
+
 mybatis:
   mapper-locations: classpath:org/example/mapper/*.xml
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     map-underscore-to-camel-case: true
+
 ai:
   api-key: sk-ws-H.RXLEMLR.ivU3.MEUCIQCZknOAi3d4mYWSYp-FHcBmLMh8fLxHtVEgP64qTwRjnQIgCJxKFDvFN6B48IyNwREnGPNUNn4xY261q7B8bhdZYiU
   api-url: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
   model: qwen-plus
+
+# LangChain4j 配置
+langchain4j:
+  dashscope:
+    api-key: ${ai.api-key}
+    model-name: ${ai.model}
+    temperature: 0.7
+    max-tokens: 2048
+    timeout: 60s
+
+# Redis 配置（RAG 向量存储，开发时可选）
+# spring:
+#   data:
+#     redis:
+#       host: localhost
+#       port: 6379

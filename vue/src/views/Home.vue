@@ -47,6 +47,7 @@
       :content="selectedNote?.content"
       @replace="onAiReplace"
     />
+    <RagUploader v-model="showRagDialog" />
   </div>
 </template>
 
@@ -54,12 +55,14 @@
 import { ref, onMounted } from 'vue'
 import request from '@/utils/request.js'
 import { ElMessage } from 'element-plus'
-import { Plus, Close, Delete, MagicStick } from '@element-plus/icons-vue'
+import { Plus, Close, Delete, MagicStick, Collection } from '@element-plus/icons-vue'
+import RagUploader from '@/components/RagUploader.vue'
 import AiAssistant from '@/components/AiAssistant.vue'
 
 const notes = ref([])
 const selectedNote = ref(null)
 const showAiDialog = ref(false)
+const showRagDialog = ref(false)
 
 const loadNotes = () => {
   request.get('/note/selectAll').then(res => {
