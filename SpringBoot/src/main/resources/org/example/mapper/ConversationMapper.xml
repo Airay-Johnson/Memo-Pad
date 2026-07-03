@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.ConversationMapper">
+
+    <resultMap id="convMap" type="org.example.entity.Conversation">
+        <id column="id" property="id"/>
+        <result column="session_id" property="sessionId"/>
+        <result column="role" property="role"/>
+        <result column="content" property="content"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="org.example.entity.Conversation" useGeneratedKeys="true" keyProperty="id">
+        insert into conversation(session_id, role, content, create_time)
+        values(#{sessionId}, #{role}, #{content}, now())
+    </insert>
+
+    <select id="selectBySession" resultMap="convMap">
+        select * from conversation where session_id=#{sessionId} order by create_time asc
+    </select>
+
+    <delete id="deleteBySession">
+        delete from conversation where session_id=#{sessionId}
+    </delete>
+
+</mapper>

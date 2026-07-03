@@ -21,12 +21,10 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   const user = localStorage.getItem('user')
   if (to.path !== '/login' && to.path !== '/register' && !user) {
-    next('/login')
-  } else {
-    next()
+    return '/login'
   }
 })
 

@@ -24,6 +24,10 @@
       <template v-if="selectedNote">
         <div class="editor-header">
           <el-input v-model="selectedNote.title" class="no-border-input title-input" placeholder="标题" @input="update" />
+          <!-- ★ AI 助手按钮 -->
+          <el-button type="primary" size="small" @click="showAiDialog = true" :icon="MagicStick">
+            AI 助手
+          </el-button>
         </div>
         <el-input
           v-model="selectedNote.content"
@@ -36,6 +40,13 @@
       </template>
       <div v-else class="empty-hint">选择一个笔记</div>
     </div>
+
+    <!-- ★ AI 助手弹窗 -->
+    <AiAssistant
+      v-model="showAiDialog"
+      :content="selectedNote?.content"
+      @replace="onAiReplace"
+    />
   </div>
 </template>
 
@@ -44,13 +55,15 @@ import { ref, watch, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import request from '@/utils/request.js'
 import { ElMessage } from 'element-plus'
-import { Plus, Close } from '@element-plus/icons-vue'
+import { Plus, Close, MagicStick } from '@element-plus/icons-vue'
+import AiAssistant from '@/components/AiAssistant.vue'
 
 const route = useRoute()
 const notes = ref([])
 const selectedNote = ref(null)
 const selectedGroup = ref(null)
 const groups = ref([])
+const showAiDialog = ref(false)
 
 const loadGroups = () => {
   request.get('/noteGroup/selectAll').then(res => {
@@ -102,6 +115,14 @@ const moveToTrash = (noteId) => {
   })
 }
 
+// ★ AI 替换回调
+const onAiReplace = (newContent) => {
+  if (selectedNote.value) {
+    selectedNote.value.content = newContent
+    update() // 自动保存
+  }
+}
+
 const formatTime = (t) => {
   if (!t) return ''
   return new Date(t).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
@@ -142,9 +163,16 @@ onMounted(() => { nextTick(() => { checkRoute() }) })
 .delete-icon:hover { color: #f56c6c; }
 .right-panel { flex: 1; padding: 20px 30px; overflow-y: auto; }
 .editor-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-.no-border-input >>> .el-input__wrapper { box-shadow: none !important; background: transparent; }
-.title-input >>> .el-input__inner { font-size: 22px; font-weight: 600; }
-.content-input >>> .el-textarea__inner { font-size: 16px; line-height: 1.8; border: none; box-shadow: none; resize: none; }
+.no-border-input { box-shadow: none !important; background: transparent; }
+.title-input { font-size: 22px; font-weight: 600; }
+.content-input { font-size: 16px; line-height: 1.8; border: none; box-shadow: none; resize: none; }
 .empty-hint { color: #ccc; font-size: 18px; text-align: center; margin-top: 200px; }
 .empty-list { color: #bbb; text-align: center; padding: 40px 20px; font-size: 14px; }
+</style>
+
+<!-- Element Plus 组件内部样式覆盖，无法 scoped，单独用全局样式块 -->
+<style>
+.no-border-input .el-input__wrapper { box-shadow: none !important; background: transparent; }
+.title-input .el-input__inner { font-size: 22px; font-weight: 600; }
+.content-input .el-textarea__inner { font-size: 16px; line-height: 1.8; border: none; box-shadow: none; resize: none; }
 </style>

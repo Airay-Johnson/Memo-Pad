@@ -27,4 +27,10 @@ public class NoteService {
     public void restoreNote(Integer id) { noteMapper.restoreNote(id); }
 
     public void deleteForever(Integer id) { noteMapper.deleteForever(id); }
+
+    public Note selectById(Integer id) { return noteMapper.selectById(id); }
+
+    public List<Note> search(String keyword) { return noteMapper.search(keyword); }
+
+    public void updateGroupId(Integer id, Integer groupId) { noteMapper.updateGroupId(id, groupId); }
 }
