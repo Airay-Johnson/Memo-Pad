@@ -9,4 +9,5 @@ public interface AdminMapper {
     Admin selectById(Integer id);
     void insert(Admin admin);
     void updatePassword(Admin admin);
-    v
+    void updateProfile(Admin admin);
+}
