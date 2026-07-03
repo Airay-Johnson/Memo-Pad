@@ -135,8 +135,13 @@ onMounted(loadNotes)
 .editor-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .trash-icon { font-size: 18px; color: #aaa; cursor: pointer; }
 .trash-icon:hover { color: #f56c6c; }
-.no-border-input :deep(.el-input__wrapper) { box-shadow: none !important; background: transparent; }
-.title-input :deep(.el-input__inner) { font-size: 22px; font-weight: 600; }
-.content-input :deep(.el-textarea__inner) { font-size: 16px; line-height: 1.8; border: none; box-shadow: none; resize: none; }
+.no-border-input { box-shadow: none !important; background: transparent; }
 .empty-hint { color: #ccc; font-size: 18px; text-align: center; margin-top: 200px; }
+</style>
+
+<!-- Element Plus 组件内部样式覆盖，无法 scoped，单独用全局样式块 -->
+<style>
+.no-border-input .el-input__wrapper { box-shadow: none !important; background: transparent; }
+.title-input .el-input__inner { font-size: 22px; font-weight: 600; }
+.content-input .el-textarea__inner { font-size: 16px; line-height: 1.8; border: none; box-shadow: none; resize: none; }
 </style>

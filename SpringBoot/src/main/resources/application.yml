@@ -12,6 +12,6 @@ mybatis:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     map-underscore-to-camel-case: true
 ai:
-  api-key: your-api-key-here
+  api-key: sk-ws-H.RXLEMLR.ivU3.MEUCIQCZknOAi3d4mYWSYp-FHcBmLMh8fLxHtVEgP64qTwRjnQIgCJxKFDvFN6B48IyNwREnGPNUNn4xY261q7B8bhdZYiU
   api-url: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
   model: qwen-plus

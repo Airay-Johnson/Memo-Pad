@@ -43,3 +43,15 @@ CREATE TABLE IF NOT EXISTS note (
   update_time DATETIME     DEFAULT NULL,
   FOREIGN KEY (group_id) REFERENCES note_group(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- -------------------------------------------
+-- AI 对话历史表（Layer 4 持久化记忆）
+-- -------------------------------------------
+CREATE TABLE IF NOT EXISTS conversation (
+  id          INT PRIMARY KEY AUTO_INCREMENT,
+  session_id  VARCHAR(36)  NOT NULL COMMENT '会话标识，UUID',
+  role        VARCHAR(20)  NOT NULL COMMENT 'system / user / assistant / tool',
+  content     TEXT         NOT NULL,
+  create_time DATETIME     DEFAULT now(),
+  INDEX idx_session (session_id, create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

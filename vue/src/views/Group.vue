@@ -163,9 +163,16 @@ onMounted(() => { nextTick(() => { checkRoute() }) })
 .delete-icon:hover { color: #f56c6c; }
 .right-panel { flex: 1; padding: 20px 30px; overflow-y: auto; }
 .editor-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-.no-border-input :deep(.el-input__wrapper) { box-shadow: none !important; background: transparent; }
-.title-input :deep(.el-input__inner) { font-size: 22px; font-weight: 600; }
-.content-input :deep(.el-textarea__inner) { font-size: 16px; line-height: 1.8; border: none; box-shadow: none; resize: none; }
+.no-border-input { box-shadow: none !important; background: transparent; }
+.title-input { font-size: 22px; font-weight: 600; }
+.content-input { font-size: 16px; line-height: 1.8; border: none; box-shadow: none; resize: none; }
 .empty-hint { color: #ccc; font-size: 18px; text-align: center; margin-top: 200px; }
 .empty-list { color: #bbb; text-align: center; padding: 40px 20px; font-size: 14px; }
+</style>
+
+<!-- Element Plus 组件内部样式覆盖，无法 scoped，单独用全局样式块 -->
+<style>
+.no-border-input .el-input__wrapper { box-shadow: none !important; background: transparent; }
+.title-input .el-input__inner { font-size: 22px; font-weight: 600; }
+.content-input .el-textarea__inner { font-size: 16px; line-height: 1.8; border: none; box-shadow: none; resize: none; }
 </style>

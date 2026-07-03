@@ -46,4 +46,16 @@
         delete from note where id=#{id}
     </delete>
 
+    <select id="selectById" resultMap="noteMap">
+        select * from note where id=#{id}
+    </select>
+
+    <select id="search" resultMap="noteMap">
+        select * from note where deleted=0 and (title like concat('%', #{keyword}, '%') or content like concat('%', #{keyword}, '%')) order by update_time desc
+    </select>
+
+    <update id="updateGroupId">
+        update note set group_id=#{groupId}, update_time=now() where id=#{id}
+    </update>
+
 </mapper>
