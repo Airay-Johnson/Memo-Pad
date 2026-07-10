@@ -1,0 +1,61 @@
+package org.example.controller;
+
+import jakarta.annotation.Resource;
+import org.example.common.Result;
+import org.example.entity.Note;
+import org.example.service.NoteService;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/note")
+public class NoteController {
+
+    @Resource
+    private NoteService noteService;
+
+    @GetMapping("/selectAll")
+    public Result selectAll() {
+        return Result.success(noteService.selectAll());
+    }
+
+    @GetMapping("/selectByGroupId")
+    public Result selectByGroupId(@RequestParam Integer groupId) {
+        return Result.success(noteService.selectByGroupId(groupId));
+    }
+
+    @PostMapping("/insertNewNote")
+    public Result insertNewNote(@RequestBody Note note) {
+        noteService.insertNewNote(note);
+        return Result.success();
+    }
+
+    @PutMapping("/updateNote")
+    public Result updateNote(@RequestBody Note note) {
+        noteService.updateNote(note);
+        return Result.success();
+    }
+
+    @PutMapping("/moveToTrash")
+    public Result moveToTrash(@RequestBody Note note) {
+        noteService.moveToTrash(note.getId());
+        return Result.success();
+    }
+
+    @GetMapping("/selectTrash")
+    public Result selectTrash() {
+        return Result.success(noteService.selectTrash());
+    }
+
+    @PutMapping("/restoreNote")
+    public Result restoreNote(@RequestBody Note note) {
+        noteService.restoreNote(note.getId());
+        return Result.success();
+    }
+
+    @DeleteMapping("/deleteForever")
+    public Result deleteForever(@RequestParam Integer id) {
+        noteService.deleteForever(id);
+        return Result.success();
+    }
+}

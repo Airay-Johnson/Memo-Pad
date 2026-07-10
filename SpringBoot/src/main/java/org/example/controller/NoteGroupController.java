@@ -1,0 +1,33 @@
+package org.example.controller;
+
+import jakarta.annotation.Resource;
+import org.example.common.Result;
+import org.example.entity.NoteGroup;
+import org.example.service.NoteGroupService;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/noteGroup")
+public class NoteGroupController {
+
+    @Resource
+    private NoteGroupService noteGroupService;
+
+    @GetMapping("/selectAll")
+    public Result selectAll() {
+        return Result.success(noteGroupService.selectAll());
+    }
+
+    @PostMapping("/insert")
+    public Result insert(@RequestBody NoteGroup noteGroup) {
+        noteGroupService.insert(noteGroup);
+        return Result.success();
+    }
+
+    @DeleteMapping("/deleteGroup")
+    public Result deleteGroup(@RequestParam Integer id) {
+        noteGroupService.deleteGroup(id);
+        return Result.success();
+    }
+}

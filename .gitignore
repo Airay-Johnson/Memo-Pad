@@ -1,0 +1,25 @@
+# Maven
+SpringBoot/target/
+*.class
+*.jar
+*.war
+
+# Node
+vue/node_modules/
+vue/dist/
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# temp
+*.tmp
+*.temp
+
+# secrets (contains API keys)
+SpringBoot/src/main/resources/application.yml

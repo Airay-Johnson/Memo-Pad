@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: memopad-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: memopad
+      MYSQL_CHARSET: utf8mb4
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: memopad-postgres
+    environment:
+      POSTGRES_USER: memopad
+      POSTGRES_PASSWORD: memopad123
+      POSTGRES_DB: memopad_rag
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    command: >
+      -c shared_preload_libraries=vector
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: memopad-backend
+    ports:
+      - "9999:9999"
+    depends_on:
+      - mysql
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/memopad?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT%2b8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
+      SPRING_RAG_DATASOURCE_URL: jdbc:postgresql://postgres:5432/memopad_rag
+      SPRING_RAG_DATASOURCE_USERNAME: memopad
+      SPRING_RAG_DATASOURCE_PASSWORD: memopad123
+      MEMOPAD_AI_API_KEY: ${AI_API_KEY:-your-api-key-here}
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+  pgdata:

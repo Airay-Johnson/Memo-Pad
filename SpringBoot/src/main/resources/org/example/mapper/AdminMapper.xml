@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.AdminMapper">
+
+    <resultMap id="adminMap" type="org.example.entity.Admin">
+        <id column="id" property="id"/>
+        <result column="email" property="email"/>
+        <result column="password" property="password"/>
+        <result column="name" property="name"/>
+        <result column="avatar" property="avatar"/>
+    </resultMap>
+
+    <select id="selectByUsername" resultMap="adminMap">
+        select * from admin where email=#{email}
+    </select>
+
+    <select id="selectById" resultMap="adminMap">
+        select * from admin where id=#{id}
+    </select>
+
+    <insert id="insert" parameterType="org.example.entity.Admin" useGeneratedKeys="true" keyProperty="id">
+        insert into admin(email, password, name) values(#{email}, #{password}, #{name})
+    </insert>
+
+    <update id="updatePassword" parameterType="org.example.entity.Admin">
+        update admin set password=#{password} where id=#{id}
+    </update>
+
+    <update id="updateProfile" parameterType="org.example.entity.Admin">
+        update admin set name=#{name} where id=#{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.NoteMapper">
+
+    <resultMap id="noteMap" type="org.example.entity.Note">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="group_id" property="groupId"/>
+        <result column="deleted" property="deleted"/>
+        <result column="delete_time" property="deleteTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="noteMap">
+        select * from note where deleted=0 and user_id=#{userId} order by update_time desc
+    </select>
+
+    <select id="selectByGroupId" resultMap="noteMap">
+        select * from note where group_id=#{groupId} and deleted=0 and user_id=#{userId} order by update_time desc
+    </select>
+
+    <insert id="insertNewNote" parameterType="org.example.entity.Note" useGeneratedKeys="true" keyProperty="id">
+        insert into note(user_id, title, content, group_id, create_time, update_time, deleted)
+        values(#{userId}, #{title}, #{content}, #{groupId}, now(), now(), 0)
+    </insert>
+
+    <update id="updateNote" parameterType="org.example.entity.Note">
+        update note set title=#{title}, content=#{content}, update_time=now() where id=#{id} and user_id=#{userId}
+    </update>
+
+    <update id="moveToTrash">
+        update note set deleted=1, delete_time=now() where id=#{id} and user_id=#{userId}
+    </update>
+
+    <select id="selectTrash" resultMap="noteMap">
+        select * from note where deleted=1 and user_id=#{userId} order by delete_time desc
+    </select>
+
+    <update id="restoreNote">
+        update note set deleted=0, delete_time=null where id=#{id} and user_id=#{userId}
+    </update>
+
+    <delete id="deleteForever">
+        delete from note where id=#{id} and user_id=#{userId}
+    </delete>
+
+    <select id="selectById" resultMap="noteMap">
+        select * from note where id=#{id} and user_id=#{userId}
+    </select>
+
+    <select id="search" resultMap="noteMap">
+        select * from note where deleted=0 and user_id=#{userId}
+        and (title like concat('%', #{keyword}, '%') or content like concat('%', #{keyword}, '%'))
+        order by update_time desc
+    </select>
+
+    <update id="updateGroupId">
+        update note set group_id=#{groupId}, update_time=now() where id=#{id} and user_id=#{userId}
+    </update>
+
+</mapper>
